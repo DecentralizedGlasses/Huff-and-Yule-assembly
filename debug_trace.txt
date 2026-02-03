@@ -1,0 +1,8 @@
+Compiler run failed:
+Error (8936): Invalid character in string. If you are trying to use Unicode characters, use a unicode"..." string literal.
+  --> test/v1/Debug.t.sol:20:22:
+   |
+20 |         console2.log("✓ Assertion passed");
+   |                      ^^
+
+Error: Compilation failed

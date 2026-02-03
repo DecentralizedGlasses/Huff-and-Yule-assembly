@@ -1,0 +1,79 @@
+
+// 60008060093d393df3 -> contract creation bytecode
+// Hey, take the binary after me, and stick it on-chain.
+// 39 opcode is used for contract creation. from right side
+
+/*interfaces*/
+#define function updateHorseNumber(uint256) nonpayable returns()
+#define function readNumberOfHorses() view returns(uint256)
+
+#define constant NUMBER_OF_HORSES_STORAGE_SLOT = FREE_STORAGE_POINTER()
+
+#define macro MAIN() = takes(0) returns(0) {
+    // 0x00    // [0]
+    // 0x02    // top [2, 0] Bottom
+    // calldataload // it will take the data from the top of the stack to the bottom
+
+    // How do we cutdown the calldata -> function selector?
+
+    // SHR opode
+    // 0x0102 (bytes)
+    // 1 byte = 8 bits
+    // equivalent bin value is 0b(0x)   1(01)  00000010(02)
+    // right shift 2 bits it will become 0b001000000
+    // 0xF102(bytes) -> 0b(0x)  11110001(F1)  00000010(02)    (bin)
+    // 0xe0 // [0xe0, calldata (32)]
+    // shr //[function_selector]
+
+    0x00 calldataload 0xe0 shr // returns a 4 byte [function_selector]
+
+    // 0xcdfead2e == update
+    // 0xe026c017 == read
+    dup1            // [function_selector, function_selector]
+    __FUNC_SIG(updateHorseNumber)      // [0xcdfead2e, function_selector, function_selector]
+    eq              // [true_if_func_selector_matches, function_selector]
+    // jump to updateHorseNumber code if true
+    updateJump                  // [updateHorseNumberProgramCounter, true/false]
+    jumpi                       // [function_selector]
+
+    // readNumberOfHorses, 0xe026c017
+    __FUNC_SIG(readNumberOfHorses)          // [0xe026c017, [function_selector]]
+    eq                  // compares and leaves [true_if_function_selector_matches]
+    readJump            // [readJump, true_if_func_selector_matches]
+    jumpi               // []
+
+
+    0x00 // [0]
+    0x00 // [0,0]
+    revert // []
+
+    updateJump:
+        SET_NUMBER_OF_HORSES()              // sets the compiled location of the SET_NUMBER_OF_HORSES macro as a valid jump destination.
+    readJump:
+        READ_NUMBER_OF_HORSES()
+}
+
+// 0xcdfead2e 0000000000000000000000000000000000000000000000000000001
+#define macro SET_NUMBER_OF_HORSES() = takes(0) returns(0){
+    // 2. Get the value to store form calldata
+    0x04            // [4] -pushing `4` to the stack to be used as our bytes offset
+    calldataload    // [value] - Takes bytes offset from our stack, adds calldata offset by bytes offset to the stack
+    // 1. Give numberOfHorses a storage slot
+    [NUMBER_OF_HORSES_STORAGE_SLOT]         // [storage_slot, value] it will push value to storage stack
+    
+    // 3. Execute the SSTORE opcode
+    sstore
+    stop        //  if we didn't used stop it will keep storing values
+}
+#define macro READ_NUMBER_OF_HORSES() = takes(0) returns(0){
+    // 1. get the applicable storage slot number
+    [NUMBER_OF_HORSES_STORAGE_SLOT]      // [key]
+    // 2. Load the value from the slot into memory
+    sload        // [VALUE] 
+    0x00
+    mstore      // []/memory: VALUE, loading into memory
+    0x20        // [0x20] / Memory: VALUE
+    0x00        // [0x20, 0x00] / Memory: [VALUE]
+    // 3. return 
+    return      // []/ Memory: []
+}

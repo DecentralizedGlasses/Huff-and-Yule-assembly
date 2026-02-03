@@ -1,0 +1,22 @@
+No files changed, compilation skipped
+
+Ran 2 tests for test/v1/HorseStorehuff.t.sol:HorseStoreHuff
+[PASS] testReadValue() (gas: 7625)
+Traces:
+  [7625] HorseStoreHuff::testReadValue()
+    ├─ [2168] 0x104fBc016F4bb334D775a19E8A6510109AC63E00::readNumberOfHorses() [staticcall]
+    │   └─ ← [Return] 0
+    └─ ← [Stop]
+
+[PASS] testWriteValue() (gas: 28438)
+Traces:
+  [28438] HorseStoreHuff::testWriteValue()
+    ├─ [22142] 0x104fBc016F4bb334D775a19E8A6510109AC63E00::updateHorseNumber(745)
+    │   └─ ← [Stop]
+    ├─ [168] 0x104fBc016F4bb334D775a19E8A6510109AC63E00::readNumberOfHorses() [staticcall]
+    │   └─ ← [Return] 745
+    └─ ← [Stop]
+
+Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 1.43s (561.14µs CPU time)
+
+Ran 1 test suite in 1.45s (1.43s CPU time): 2 tests passed, 0 failed, 0 skipped (2 total tests)
